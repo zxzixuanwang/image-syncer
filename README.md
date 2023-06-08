@@ -1,14 +1,7 @@
 # image-syncer
 
-![workflow check](https://github.com/AliyunContainerService/image-syncer/actions/workflows/check.yml/badge.svg)
-![workflow build](https://github.com/AliyunContainerService/image-syncer/actions/workflows/build.yml/badge.svg)
-[![Version](https://img.shields.io/github/v/release/AliyunContainerService/image-syncer)](https://github.com/AliyunContainerService/image-syncer/releases)
-[![Go Report Card](https://goreportcard.com/badge/github.com/AliyunContainerService/image-syncer)](https://goreportcard.com/report/github.com/AliyunContainerService/image-syncer)
-[![Github All Releases](https://img.shields.io/github/downloads/AliyunContainerService/image-syncer/total.svg)](https://api.github.com/repos/AliyunContainerService/image-syncer/releases)
-[![codecov](https://codecov.io/gh/AliyunContainerService/image-syncer/graph/badge.svg)](https://codecov.io/gh/AliyunContainerService/image-syncer)
-[![License](https://img.shields.io/github/license/AliyunContainerService/image-syncer)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
-`image-syncer` is a docker registry tools. With `image-syncer` you can synchronize docker images from some source registries to target registries, which include most popular public docker registry services.
+This `image-syncer` is a timed Docker image synchronization tool that can be used for multi to many image warehouse synchronization. With `image-syncer` you can synchronize docker images from some source registries to target registries, which include most popular public docker registry services.
 
 English | [简体中文](./README-zh_CN.md)
 
@@ -21,34 +14,36 @@ English | [简体中文](./README-zh_CN.md)
 - Concurrent Synchronization, adjustable goroutine numbers
 - Automatic Retries of Failed Sync Tasks, to resolve the network problems while synchronizing
 - Doesn't rely on Docker daemon or other programs
+- Push the synchronized image here through the Docker Hook tool, whic
 
 ## Usage
 
-### Install image-syncer
-
-You can download latest binary release [here](https://github.com/AliyunContainerService/image-syncer/releases)
 
 ### Compile Manually
 
 ```
-go get github.com/AliyunContainerService/image-syncer
-cd $GOPATH/github.com/AliyunContainerService/image-syncer
+go get github.com/zxzixuanwang/image-syncer
+cd $GOPATH/github.com/zxzixuanwang/image-syncer
 
 # This will create a binary file named image-syncer
 make
 ```
 
+### Parameters
+```bash
+# example 
+curl  -i http://localhost:8080/images/sync/hook\?name\=reponame/namespace/imagename\&tag\=1.0.3 -u $username:$password
+
+```
+
 ### Example
 
 ```shell
-# Get usage information
-./image-syncer -h
+# By default, it will read the sync.yaml file in the configs folder
+./image-syncer 
 
-# With this command, configure file path is "./config.json", default target registry is "registry.cn-beijing.aliyuncs.com",
-# default target namespace is "ruohe", 6 of goroutine numbers, every failed task will be retried 3 times.
-./image-syncer --proc=6 --auth=./auth.json --images=./images.json --namespace=ruohe \
---registry=registry.cn-beijing.aliyuncs.com --retries=3
-```
+# Specify profile startup
+./image-syncer -c configs/sync.yaml
 
 ### Configure Files
 
@@ -130,47 +125,4 @@ Image sync configuration file defines all the image synchronization rules, the f
 }	
 ```
 
-### Parameters
 
-```
--h  --help       usage information
-
-    --config     set the path of config file, this file need to be created before starting synchronization, default
-                 config file is at "current/working/directory/config.json". (This flag can be replaced with flag --auth
-                 and --images which for better orgnization.)
-
-    --auth       set the path of authentication file, this file need to be created before starting synchronization, default
-                 config file is at "current/working/directory/auth.json". This flag need to be pair used with --images.
-
-    --images     set the path of image rules file, this file need to be created before starting synchronization, default
-                 config file is at "current/working/directory/images.json". This flag need to be pair used with --auth.
-
-    --log        set the path of log file, logs will be printed to Stderr by default 
-
-    --namespace  set default-namespace, default-namespace can also be set by environment variable "DEFAULT_NAMESPACE",
-                 if they are both set at the same time, "DEFAULT_NAMESPACE" will not work at this synchronization,
-                 default-namespace will work only if default-registry is not empty.
-
-    --registry   set default-registry, default-registry can also be set by environment variable "DEFAULT_REGISTRY",
-                 if they are both set at the same time, "DEFAULT_REGISTRY" will not work at this synchronization, 
-                 default-registry will work only if default-namespace is not empty.
-
-    --proc       number of goroutines, default value is 5
-
-    --records    image-syncer will record the information of synchronized image blobs to a disk file, this parameter will
-                 set the path of the records file, default path is "current/working/directory/records", a records file can be 
-                 reused to make incremental synchronization if it is really generated by yourself. image-syncer remove the 
-                 dependence of records file after v1.1.0
-
-    --retries    number of retries, default value is 2, the retries of failed sync tasks will start after all sync tasks
-                 are executed once, reties of failed sync tasks will resolve most occasional network problems during 
-                 synchronization
-
-    --os         os list to filter source tags, not works for docker v2 schema1 media, takes no effect if empty
-    
-    --arch       architecture list to filter source tags, takes no effect if empty
-```
-
-### FAQs
-
-Frequently asked questions are listed in [FAQs](./FAQs.md)

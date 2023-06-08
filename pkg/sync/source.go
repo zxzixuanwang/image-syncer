@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/AliyunContainerService/image-syncer/pkg/tools"
 	"github.com/containers/image/v5/docker"
 	"github.com/containers/image/v5/manifest"
 	"github.com/containers/image/v5/types"
+	"github.com/zxzixuanwang/image-syncer/pkg/tools"
 )
 
 // ImageSource is a reference to a remote image need to be pulled.

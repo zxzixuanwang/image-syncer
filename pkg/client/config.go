@@ -39,7 +39,7 @@ type Auth struct {
 
 // NewSyncConfig creates a Config struct
 func NewSyncConfig(configFile, authFilePath, imageFilePath, defaultDestRegistry, defaultDestNamespace string,
-	osFilterList, archFilterList []string) (*Config, error) {
+	osFilterList, archFilterList []string, imageList map[string]string) (*Config, error) {
 	if len(configFile) == 0 && len(imageFilePath) == 0 {
 		return nil, fmt.Errorf("neither config.json nor images.json is provided")
 	}
@@ -61,9 +61,12 @@ func NewSyncConfig(configFile, authFilePath, imageFilePath, defaultDestRegistry,
 			}
 		}
 		config.AuthList = expandEnv(config.AuthList)
-
-		if err := openAndDecode(imageFilePath, &config.ImageList); err != nil {
-			return nil, fmt.Errorf("decode image file %v error: %v", imageFilePath, err)
+		if len(imageList) > 0 {
+			config.ImageList = imageList
+		} else {
+			if err := openAndDecode(imageFilePath, &config.ImageList); err != nil {
+				return nil, fmt.Errorf("decode image file %v error: %v", imageFilePath, err)
+			}
 		}
 	}
 

@@ -1,14 +1,6 @@
 # image-syncer
 
-![workflow check](https://github.com/AliyunContainerService/image-syncer/actions/workflows/check.yml/badge.svg)
-![workflow build](https://github.com/AliyunContainerService/image-syncer/actions/workflows/build.yml/badge.svg)
-[![Version](https://img.shields.io/github/v/release/AliyunContainerService/image-syncer)](https://github.com/AliyunContainerService/image-syncer/releases)
-[![Go Report Card](https://goreportcard.com/badge/github.com/AliyunContainerService/image-syncer)](https://goreportcard.com/report/github.com/AliyunContainerService/image-syncer)
-[![Github All Releases](https://img.shields.io/github/downloads/AliyunContainerService/image-syncer/total.svg)](https://api.github.com/repos/AliyunContainerService/image-syncer/releases)
-[![codecov](https://codecov.io/gh/AliyunContainerService/image-syncer/graph/badge.svg)](https://codecov.io/gh/AliyunContainerService/image-syncer)
-[![License](https://img.shields.io/github/license/AliyunContainerService/image-syncer)](https://www.apache.org/licenses/LICENSE-2.0.html)
-
-`image-syncer` 是一个docker镜像同步工具，可用来进行多对多的镜像仓库同步，支持目前绝大多数主流的docker镜像仓库服务
+此`image-syncer` 是一个定时docker镜像同步工具，可用来进行多对多的镜像仓库同步，支持目前绝大多数主流的docker镜像仓库服务，接收同步hook信息，定时同步
 
 [English](./README.md) | 简体中文
 
@@ -21,33 +13,36 @@
 - 并发同步，可以通过配置文件调整并发数
 - 自动重试失败的同步任务，可以解决大部分镜像同步中的网络抖动问题
 - 不依赖docker以及其他程序
+- 通过docker hook工具将同步镜像推送至此，此工具会记录信息进而定时同步
 
 ## 使用
 
-### 下载和安装
 
-在[releases](https://github.com/AliyunContainerService/image-syncer/releases)页面可下载源码以及二进制文件
 
 ### 手动编译
 
 ```
-go get github.com/AliyunContainerService/image-syncer
-cd $GOPATH/github.com/AliyunContainerService/image-syncer
+go get github.com/zxzixuanwang/image-syncer
+cd $GOPATH/github.com/zxzixuanwang/image-syncer
 
 # This will create a binary file named image-syncer
 make
+```
+### 参数
+```bash
+# example 
+curl  -i http://localhost:8080/images/sync/hook\?name\=reponame/namespace/imagename\&tag\=1.0.3 -u $username:$password
+
 ```
 
 ### 使用用例
 
 ```shell
-# 获得帮助信息
-./image-syncer -h
+# 默认启动，会读取configs文件夹下，sync.yaml文件
+./image-syncer 
 
-# 设置配置文件为config.json，默认registry为registry.cn-beijing.aliyuncs.com
-# 默认namespace为ruohe，并发数为6
-./image-syncer --proc=6 --auth=./auth.json --images=./images.json --namespace=ruohe \
---registry=registry.cn-beijing.aliyuncs.com --retries=3
+# 指定配置文件启动
+./image-syncer -c configs/sync.yaml
 ```
 
 <!-- 
@@ -123,37 +118,6 @@ ACR(Ali Container Registry) 是阿里云提供的容器镜像服务，ACR企业�
 }
 ```
 
-### 更多参数
 
-`image-syncer` 的使用比较简单，但同时也支持多个命令行参数的指定：
 
-```
--h  --help       使用说明，会打印出一些启动参数的当前默认值
-   
-    --config     设置用户提供的配置文件路径，使用之前需要创建此文件，默认为当前工作目录下的config.json文件。这个参数与 --auth和--images 的
-                 作用相同，分解成两个参数可以更好地区分认证信息与镜像仓库同步规则。建议使用 --auth 和 --images.
 
-    --auth       设置用户提供的认证文件所在路径，使用之前需要创建此认证文件，默认为当前工作目录下的auth.json文件
-
-    --images     设置用户提供的镜像同步规则文件所在路径，使用之前需要创建此文件，默认为当前工作目录下的images.json文件
-
-    --log        打印出来的log文件路径，默认打印到标准错误输出，如果将日志打印到文件将不会有命令行输出，此时需要通过cat对应的日志文件查看
-
-    --namespace  设置默认的目标namespace，当配置文件内一条images规则的目标仓库为空，并且默认registry也不为空时有效，可以通过环境变量DEFAULT_NAMESPACE设置，同时传入命令行参数会优先使用命令行参数值
-
-    --registry   设置默认的目标registry，当配置文件内一条images规则的目标仓库为空，并且默认namespace也不为空时有效，可以通过环境变量DEFAULT_REGISTRY设置，同时传入命令行参数会优先使用命令行参数值
-
-    --proc       并发数，进行镜像同步的并发goroutine数量，默认为5
-
-    --records    指定传输过程中保存已传输完成镜像信息（blob）的文件输出/读取路径，默认输出到当前工作目录，一个records记录了对应目标仓库的已迁移信息，可以用来进行连续的多次迁移（会节约大量时间，但不要把之前自己没执行过的records文件拿来用），如果有unknown blob之类的错误，可以删除该文件重新尝试，image-syncer 在 >= v1.1.0 版本中移除了对于records文件的依赖
-
-    --retries    失败同步任务的重试次数，默认为2，重试会在所有任务都被执行一遍之后开始，并且也会重新尝试对应次数生成失败任务的生成。一些偶尔出现的网络错误比如io timeout、TLS handshake timeout，都可以通过设置重试次数来减少失败的任务数量
-
-    --os         用来过滤源 tag 的 os 列表，为空则没有任何过滤要求，只对非 docker v2 schema1 media 类型的镜像格式有效
-
-    --arch       用来过滤源 tag 的 architecture 列表，为空则没有任何过滤要求
-```
-
-### FAQs
-
-同步中常见的问题汇总在[FAQs文档](./FAQs.md)中

@@ -6,9 +6,10 @@ import (
 	"strings"
 	sync2 "sync"
 
-	"github.com/AliyunContainerService/image-syncer/pkg/sync"
-	"github.com/AliyunContainerService/image-syncer/pkg/tools"
 	"github.com/sirupsen/logrus"
+	"github.com/zxzixuanwang/image-syncer/pkg/log"
+	"github.com/zxzixuanwang/image-syncer/pkg/sync"
+	"github.com/zxzixuanwang/image-syncer/pkg/tools"
 )
 
 // Client describes a synchronization client
@@ -41,16 +42,35 @@ type URLPair struct {
 	source      string
 	destination string
 }
+type SyncClientIn struct {
+	ConfigFile           string
+	AuthFile             string
+	ImageFile            string
+	LogFile              *string
+	RoutineNum           int
+	Retries              int
+	DefaultDestRegistry  string
+	DefaultDestNamespace string
+	OsFilterList         []string
+	ArchFilterList       []string
+	L                    *logrus.Logger
+	ImageList            map[string]string
+}
 
 // NewSyncClient creates a synchronization client
-func NewSyncClient(configFile, authFile, imageFile, logFile string,
-	routineNum, retries int, defaultDestRegistry, defaultDestNamespace string,
-	osFilterList, archFilterList []string) (*Client, error) {
+func NewSyncClient(input *SyncClientIn) (*Client, error) {
 
-	logger := NewFileLogger(logFile)
+	if input.L == nil {
+		if input.LogFile != nil {
+			input.L = log.NewFileLogger(*input.LogFile, "")
+		} else {
+			input.L = log.NewFileLogger("./app.log", "")
+		}
+	}
 
-	config, err := NewSyncConfig(configFile, authFile, imageFile,
-		defaultDestRegistry, defaultDestNamespace, osFilterList, archFilterList)
+	config, err := NewSyncConfig(input.ConfigFile, input.AuthFile, input.ImageFile,
+		input.DefaultDestRegistry, input.DefaultDestNamespace,
+		input.OsFilterList, input.ArchFilterList, input.ImageList)
 	if err != nil {
 		return nil, fmt.Errorf("generate config error: %v", err)
 	}
@@ -61,9 +81,9 @@ func NewSyncClient(configFile, authFile, imageFile, logFile string,
 		failedTaskList:             list.New(),
 		failedTaskGenerateList:     list.New(),
 		config:                     config,
-		routineNum:                 routineNum,
-		retries:                    retries,
-		logger:                     logger,
+		routineNum:                 input.RoutineNum,
+		retries:                    input.Retries,
+		logger:                     input.L,
 		taskListChan:               make(chan int, 1),
 		urlPairListChan:            make(chan int, 1),
 		failedTaskListChan:         make(chan int, 1),
@@ -73,7 +93,7 @@ func NewSyncClient(configFile, authFile, imageFile, logFile string,
 
 // Run is main function of a synchronization client
 func (c *Client) Run() {
-	fmt.Println("Start to generate sync tasks, please wait ...")
+	c.logger.Info("Start to generate sync tasks, please wait ...")
 
 	//var finishChan = make(chan struct{}, c.routineNum)
 
@@ -138,7 +158,7 @@ func (c *Client) Run() {
 	// generate sync tasks
 	openRoutinesGenTaskAndWaitForFinish()
 
-	fmt.Println("Start to handle sync tasks, please wait ...")
+	c.logger.Info("Start to handle sync tasks, please wait ...")
 
 	// generate goroutines to handle sync tasks
 	openRoutinesHandleTaskAndWaitForFinish()
@@ -148,7 +168,7 @@ func (c *Client) Run() {
 			c.urlPairList.PushBackList(c.failedTaskGenerateList)
 			c.failedTaskGenerateList.Init()
 			// retry to generate task
-			fmt.Println("Start to retry to generate sync tasks, please wait ...")
+			c.logger.Warn("Start to retry to generate sync tasks, please wait ...")
 			openRoutinesGenTaskAndWaitForFinish()
 		}
 
@@ -159,12 +179,12 @@ func (c *Client) Run() {
 
 		if c.taskList.Len() != 0 {
 			// retry to handle task
-			fmt.Println("Start to retry sync tasks, please wait ...")
+			c.logger.Warn("Start to retry sync tasks, please wait ...")
 			openRoutinesHandleTaskAndWaitForFinish()
 		}
 	}
 
-	fmt.Printf("Finished, %v sync tasks failed, %v tasks generate failed\n", c.failedTaskList.Len(), c.failedTaskGenerateList.Len())
+	c.logger.Infof("Finished, %v sync tasks failed, %v tasks generate failed\n", c.failedTaskList.Len(), c.failedTaskGenerateList.Len())
 	c.logger.Infof("Finished, %v sync tasks failed, %v tasks generate failed", c.failedTaskList.Len(), c.failedTaskGenerateList.Len())
 }
 

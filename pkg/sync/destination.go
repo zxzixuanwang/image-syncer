@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/AliyunContainerService/image-syncer/pkg/tools"
 	"github.com/containers/image/v5/docker"
 	"github.com/containers/image/v5/types"
+	"github.com/zxzixuanwang/image-syncer/pkg/tools"
 )
 
 // ImageDestination is a reference of a remote image we will push to
