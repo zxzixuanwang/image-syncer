@@ -42,6 +42,7 @@ func Tickerjob(l *logrus.Logger, interval int) error {
 			l.Error("unmarshal init config err", err)
 			return err
 		}
+		reOrder(images, l)
 		RangeSet(images)
 		l.Debug("set ", Get())
 
@@ -66,6 +67,24 @@ func Tickerjob(l *logrus.Logger, interval int) error {
 	}()
 
 	return nil
+}
+
+func reOrder(images map[string]int, l *logrus.Logger) {
+	l.Infoln("reordering...")
+	for k := range images {
+		desCheckSlice := strings.Split(k, "&")
+		if len(desCheckSlice) < 2 {
+			l.Warn("get order source err,images is ", k)
+			continue
+		}
+		for i := 0; i < len(config.Conf.Registry.Reg); i++ {
+			if desCheckSlice[1] == config.Conf.Registry.Reg[i].DestinationName && strings.HasPrefix(k, config.Conf.Registry.Reg[i].SourceName) {
+				images[k] = i
+				break
+			}
+
+		}
+	}
 }
 
 func save(l *logrus.Logger) error {
@@ -124,7 +143,7 @@ func doJob(l *logrus.Logger) error {
 			l.Error("get temp slice error", tempSlice[0])
 			continue
 		}
-		tempChange[fmt.Sprintf("%s/%s", desName, strings.TrimRight(tempNameSlice[1], ":"))] = strings.TrimRight(tempSlice[0], ":")
+		tempChange[fmt.Sprintf("%s/%s", desName, strings.TrimRight(tempNameSlice[1], "&"))] = strings.TrimRight(tempSlice[0], "&")
 	}
 
 	l.Debug("i get change ", tempChange)

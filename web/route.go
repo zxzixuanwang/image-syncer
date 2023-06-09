@@ -35,7 +35,7 @@ func Route(l *logrus.Logger) *mux.Router {
 			return
 		}
 		for i := 0; i < len(num); i++ {
-			syncjob.Set(fmt.Sprintf("%s:%s", imageWholeName, num[i]), order[i])
+			syncjob.Set(fmt.Sprintf("%s&%s", imageWholeName, num[i]), order[i])
 		}
 		l.Debug("get images", syncjob.Get())
 
