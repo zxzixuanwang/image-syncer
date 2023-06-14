@@ -41,7 +41,7 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v3.5.0
         with:
-          version: v1.39.0
+          version: v1.53.2
           args: --timeout 300s --skip-dirs-use-default -v -E goconst -E gofmt -E ineffassign -E goimports -E revive -E misspell -E vet -E deadcode
 
   go-test:
