@@ -16,5 +16,7 @@ func main() {
 		panic(err)
 	}
 	l.Infof("listening port %s", config.Conf.App.Port)
-	http.ListenAndServe(config.Conf.App.Port, web.Route(l))
+	if err := http.ListenAndServe(config.Conf.App.Port, web.Route(l)); err != nil {
+		panic(err)
+	}
 }
