@@ -7,6 +7,7 @@ FROM arm64v8/alpine:latest
 WORKDIR /bin/
 COPY --from=builder /root/image-syncer ./
 RUN chmod +x ./image-syncer
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN apk add -U --no-cache ca-certificates && rm -rf /var/cache/apk/* && mkdir -p /etc/ssl/certs \
   && update-ca-certificates --fresh
 ENTRYPOINT ["image-syncer"]

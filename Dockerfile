@@ -7,6 +7,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make
 FROM alpine:latest
 WORKDIR /bin/
 COPY --from=builder /root/image-syncer ./
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 RUN chmod +x ./image-syncer
 RUN apk add -U --no-cache ca-certificates && rm -rf /var/cache/apk/* && mkdir -p /etc/ssl/certs \
   && update-ca-certificates --fresh
