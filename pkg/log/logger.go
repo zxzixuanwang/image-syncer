@@ -35,6 +35,7 @@ func NewFileLogger(path string, env string) *logrus.Logger {
 		logger.Info("Failed to log to file, using default stderr")
 	}
 	logger.Level = logrus.DebugLevel
+	logger.ReportCaller = true
 	// use json formatter
 	logger.Formatter = &logrus.JSONFormatter{
 		TimestampFormat: logTimestampFormat,
