@@ -6,13 +6,13 @@ registry:
   reg: 
     - 
       sourceName: xxx
-      namespace: xx,xxxx,xxx
-      destinationName: xxxx
+      namespace: xx
+      destinationName: xxxx,xx,xxxx
     - 
       # whole image registry name: quay.io/ruohe/kube-rbac-proxy
       sourceName: xx # like quay.io
       namespace: xx # like ruohe
-      destinationName: xx # like public-registry.io
+      destinationName: xx,xxx # like public-registry.io,"registry.hub.docker.com
 
 auth:
   Username: sync
