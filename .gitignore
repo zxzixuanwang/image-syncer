@@ -8,3 +8,4 @@ records
 
 .history
 configs/*
+*.yaml
