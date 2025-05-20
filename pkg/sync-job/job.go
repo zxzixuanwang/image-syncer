@@ -15,7 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/zxzixuanwang/image-syncer/config"
 	"github.com/zxzixuanwang/image-syncer/pkg/client"
-	"github.com/zxzixuanwang/image-syncer/pkg/tools"
+	"github.com/zxzixuanwang/image-syncer/tools"
 )
 
 func Tickerjob(l *logrus.Logger, interval int) error {
