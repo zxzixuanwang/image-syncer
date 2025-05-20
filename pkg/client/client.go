@@ -49,7 +49,9 @@ type SyncClientIn struct {
 	OsFilterList         []string
 	ArchFilterList       []string
 	L                    *logrus.Logger
-	ImageList            map[string]string
+	ImageList            map[string]interface{}
+	OutputFormat         string
+	forceUpdate          bool
 }
 
 // NewSyncClient creates a synchronization client
@@ -62,11 +64,8 @@ func NewSyncClient(input *SyncClientIn) (*Client, error) {
 			input.L = log.NewFileLogger("./app.log", "")
 		}
 	}
-	/*
-		config, err := NewSyncConfig(input.ConfigFile, input.AuthFile, input.ImageFile,
-			input.DefaultDestRegistry, input.DefaultDestNamespace,
-			input.OsFilterList, input.ArchFilterList, input.ImageList) */
-	config, err := NewSyncConfig(configFile, authFile, imagesFile, osFilterList, archFilterList, logger)
+
+	config, err := NewSyncConfig(input.ConfigFile, input.AuthFile, input.ImageFile, input.OsFilterList, input.ArchFilterList, input.L, input.ImageList)
 	if err != nil {
 		return nil, fmt.Errorf("generate config error: %v", err)
 	}
@@ -79,15 +78,15 @@ func NewSyncClient(input *SyncClientIn) (*Client, error) {
 		failedTaskCounter: concurrent.NewCounter(0, 0),
 
 		successImagesList:  concurrent.NewImageList(),
-		successImagesFile:  successImagesFile,
-		outputImagesFormat: outputImagesFormat,
+		successImagesFile:  "",
+		outputImagesFormat: input.OutputFormat,
 
 		config:     config,
-		routineNum: routineNum,
-		retries:    retries,
-		logger:     logger,
+		routineNum: input.RoutineNum,
+		retries:    input.Retries,
+		logger:     input.L,
 
-		forceUpdate: forceUpdate,
+		forceUpdate: input.forceUpdate,
 	}, nil
 }
 

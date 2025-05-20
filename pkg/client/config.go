@@ -31,7 +31,7 @@ type Config struct {
 
 // NewSyncConfig creates a Config struct
 func NewSyncConfig(configFile, authFilePath, imageFilePath string,
-	osFilterList, archFilterList []string, logger *logrus.Logger) (*Config, error) {
+	osFilterList, archFilterList []string, logger *logrus.Logger, imageList map[string]interface{}) (*Config, error) {
 	if len(configFile) == 0 && len(imageFilePath) == 0 {
 		return nil, fmt.Errorf("neither config.json nor images.json is provided")
 	}

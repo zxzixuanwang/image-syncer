@@ -1,5 +1,5 @@
-FROM golang:1.22.5 as builder
-WORKDIR /go/src/github.com/AliyunContainerService/image-syncer
+FROM golang:1.23 as builder
+WORKDIR /root
 COPY ./ ./
 ENV GOPROXY=https://proxy.golang.com.cn,direct
 RUN CGO_ENABLED=0 GOOS=linux make

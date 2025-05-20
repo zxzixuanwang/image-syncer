@@ -53,15 +53,21 @@ func Tickerjob(l *logrus.Logger, interval int) error {
 		for {
 			select {
 			case <-doTick.C:
-				doJob(l)
+				if err = doJob(l); err != nil {
+					l.Error("do job err", err)
+				}
 			case <-saveTick.C:
-				save(l)
+				if err = save(l); err != nil {
+					l.Error("save job err", err)
+				}
 			}
 		}
 	}()
 	go func() {
 		for range signalChan {
-			save(l)
+			if err = save(l); err != nil {
+				l.Error("save job err when close", err)
+			}
 			os.Exit(0)
 		}
 	}()
@@ -84,6 +90,13 @@ func reOrder(images map[string]int, l *logrus.Logger) {
 			}
 
 		}
+	}
+}
+
+func Save(l *logrus.Logger) {
+	err := save(l)
+	if err != nil {
+		l.Error("out save err", err)
 	}
 }
 
@@ -149,7 +162,7 @@ func doJob(l *logrus.Logger) error {
 	l.Debug("i get change ", tempChange)
 
 	for k := range tempCheck {
-		syncMap := make(map[string]string, len(tempChange))
+		syncMap := make(map[string]interface{}, len(tempChange))
 		for ck, v := range tempChange {
 			desOrSlice := strings.SplitN(ck, "/", 2)
 			if len(desOrSlice) != 2 {
@@ -180,7 +193,11 @@ func doJob(l *logrus.Logger) error {
 			l.Error("new client error", err)
 			return err
 		}
-		syncclient.Run()
+		err = syncclient.Run()
+		if err != nil {
+			l.Error("run sync err", err)
+			return err
+		}
 	}
 	Clean(getAll)
 	return nil
