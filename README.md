@@ -1,6 +1,7 @@
 # image-syncer
 
-此`image-syncer` 是一个经过修改过定时docker镜像同步工具，可用来进行多对多的镜像仓库同步，接收同步hook信息，定时同步。
+此`image-syncer` 是一个经过修改过定时docker镜像同步工具，源地址是 https://github.com/AliyunContainerService/image-syncer。目前新增了进行多对多的镜像仓库同步，接收同步hook信息和监听rabbitmq来接收变动，然后定时同步镜像。
+
 
 ### 手动编译
 
@@ -51,10 +52,10 @@ type RabbitMqData struct {
 quay.io: 
   username: xxx
   password: xxxxxxxxx
-  insecure: true # 可选，（v1.0.1 之后支持）registry是否是http服务，如果是，insecure 字段需要为 true，默认是 false
+  insecure: true 
 registry.cn-beijing.aliyuncs.com:
-  username: xxx # 可选，（v1.3.1 之后支持）value 使用 "${env}" 或者 "$env" 形式可以引用环境变量
-  password: xxxxxxxxx # 可选，（v1.3.1 之后支持）value 使用 "${env}" 或者 "$env" 类型的字符串可以引用环境变量
+  username: xxx 
+  password: xxxxxxxxx # 
 quay.io/coreos:
   username: abc
   password: xxxxxxxxx
