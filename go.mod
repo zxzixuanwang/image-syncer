@@ -1,3 +1,6 @@
+// Modified from [image-syncer] (https://github.com/AliyunContainerService/image-syncer)
+// Modifications Copyright 2025 zxzixuanwang.
+// Changes: Modify module and golang version.
 module github.com/zxzixuanwang/image-syncer
 
 go 1.23

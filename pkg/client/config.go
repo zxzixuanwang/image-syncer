@@ -1,3 +1,7 @@
+// Modified from [image-syncer] (https://github.com/AliyunContainerService/image-syncer)
+// Modifications Copyright 2025 zxzixuanwang.
+// Changes: Modify input parameters and the method of reading image list.
+
 package client
 
 import (
