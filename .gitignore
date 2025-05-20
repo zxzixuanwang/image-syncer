@@ -8,3 +8,6 @@ records
 
 .history
 configs/*
+*.yaml
+
+pkg/db/*

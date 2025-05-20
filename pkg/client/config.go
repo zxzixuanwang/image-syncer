@@ -1,11 +1,20 @@
+// Modified from [image-syncer] (https://github.com/AliyunContainerService/image-syncer)
+// Modifications Copyright 2025 zxzixuanwang.
+// Changes: Modify input parameters and the method of reading image list.
+
 package client
 
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"strings"
+
+	"github.com/AliyunContainerService/image-syncer/pkg/utils/types"
+
+	"github.com/sirupsen/logrus"
+
+	"github.com/AliyunContainerService/image-syncer/pkg/utils"
 
 	"gopkg.in/yaml.v2"
 )
@@ -13,39 +22,27 @@ import (
 // Config information of sync client
 type Config struct {
 	// the authentication information of each registry
-	AuthList map[string]Auth `json:"auth" yaml:"auth"`
+	AuthList map[string]types.Auth `json:"auth" yaml:"auth"`
 
 	// a <source_repo>:<dest_repo> map
-	ImageList map[string]string `json:"images" yaml:"images"`
+	ImageList map[string]interface{} `json:"images" yaml:"images"`
 
 	// only images with selected os can be sync
 	osFilterList []string
 	// only images with selected architecture can be sync
 	archFilterList []string
-
-	// If the destination registry and namespace is not provided,
-	// the source image will be synchronized to defaultDestRegistry
-	// and defaultDestNamespace with origin repo name and tag.
-	defaultDestRegistry  string
-	defaultDestNamespace string
-}
-
-// Auth describes the authentication information of a registry
-type Auth struct {
-	Username string `json:"username" yaml:"username"`
-	Password string `json:"password" yaml:"password"`
-	Insecure bool   `json:"insecure" yaml:"insecure"`
 }
 
 // NewSyncConfig creates a Config struct
-func NewSyncConfig(configFile, authFilePath, imageFilePath, defaultDestRegistry, defaultDestNamespace string,
-	osFilterList, archFilterList []string, imageList map[string]string) (*Config, error) {
+func NewSyncConfig(configFile, authFilePath, imageFilePath string,
+	osFilterList, archFilterList []string, logger *logrus.Logger, imageList map[string]interface{}) (*Config, error) {
 	if len(configFile) == 0 && len(imageFilePath) == 0 {
 		return nil, fmt.Errorf("neither config.json nor images.json is provided")
 	}
 
 	if len(configFile) == 0 && len(authFilePath) == 0 {
-		log.Println("[Warning] No authentication information found because neither config.json nor auth.json provided, this may not work.")
+		logger.Warnf("[Warning] No authentication information found because neither " +
+			"config.json nor auth.json provided, image-syncer may not work fine.")
 	}
 
 	var config Config
@@ -70,8 +67,6 @@ func NewSyncConfig(configFile, authFilePath, imageFilePath, defaultDestRegistry,
 		}
 	}
 
-	config.defaultDestNamespace = defaultDestNamespace
-	config.defaultDestRegistry = defaultDestRegistry
 	config.osFilterList = osFilterList
 	config.archFilterList = archFilterList
 
@@ -111,31 +106,30 @@ func openAndDecode(filePath string, target interface{}) error {
 }
 
 // GetAuth gets the authentication information in Config
-func (c *Config) GetAuth(registry string, namespace string) (Auth, bool) {
-	// key of each AuthList item can be "registry/namespace" or "registry" only
-	registryAndNamespace := registry + "/" + namespace
+func (c *Config) GetAuth(repository string) (types.Auth, bool) {
+	auth := types.Auth{}
+	prefixLen := 0
+	exist := false
 
-	if moreSpecificAuth, exist := c.AuthList[registryAndNamespace]; exist {
-		return moreSpecificAuth, exist
+	for key, value := range c.AuthList {
+		if matched := utils.RepoMathPrefix(repository, key); matched {
+			if len(key) > prefixLen {
+				auth = value
+				exist = true
+			}
+		}
 	}
 
-	auth, exist := c.AuthList[registry]
 	return auth, exist
 }
 
-// GetImageList gets the ImageList map in Config
-func (c *Config) GetImageList() map[string]string {
-	return c.ImageList
-}
-
-func expandEnv(authMap map[string]Auth) map[string]Auth {
-
-	result := make(map[string]Auth)
+func expandEnv(authMap map[string]types.Auth) map[string]types.Auth {
+	result := make(map[string]types.Auth)
 
 	for registry, auth := range authMap {
 		pwd := os.ExpandEnv(auth.Password)
 		name := os.ExpandEnv(auth.Username)
-		newAuth := Auth{
+		newAuth := types.Auth{
 			Username: name,
 			Password: pwd,
 			Insecure: auth.Insecure,

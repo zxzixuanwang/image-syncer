@@ -40,6 +40,21 @@ type Configs struct {
 	Registry Registrys `json:"registry,omitempty"`
 	Auth     Auth      `json:"auth,omitempty"`
 	Sync     Sync      `json:"sync,omitempty"`
+	Receiver string    `json:"receiver,omitempty"`
+	Rabbitmq Rabbitmq  `json:"rabbitmq,omitempty"`
+	DB       DB        `json:"db,omitempty"`
+}
+type DB struct {
+	File string
+}
+type RabbitmqInfo struct {
+	Address  string `json:"address,omitempty"`
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
+}
+type Rabbitmq struct {
+	Info      []RabbitmqInfo `json:"info,omitempty"`
+	QueueName string         `json:"queueName,omitempty"`
 }
 
 type Sync struct {
@@ -129,5 +144,5 @@ func init() {
 		}
 	}
 	Conf.Sync.MaxSyncDes = max
-	fmt.Println(">>>>", Conf.Registry.Reg)
+	fmt.Println("reg list: ", Conf.Registry.Reg)
 }

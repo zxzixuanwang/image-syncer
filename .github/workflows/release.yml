@@ -6,18 +6,18 @@ on:
 
 jobs:
   releases-linux-binaries:
-    name: Release Go Binaries For Linux
+    name: Release Go Binaries
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goos: [linux]
+        goos: [linux, darwin]
         goarch: [amd64, arm64]
     steps:
       - uses: actions/checkout@v2
-      - uses: wangyoucao577/go-release-action@v1.16
+      - uses: wangyoucao577/go-release-action@v1.51
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          goversion: 1.20.5
+          goversion: 1.20.4
           extra_files: LICENSE README.md

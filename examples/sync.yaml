@@ -21,3 +21,21 @@ auth:
 sync:
   routineNum: 2
   retryCount: 2
+  filePosition:
+    log: xxx/app.log
+    auth: xxx/auth.yaml
+    images: xxx/images.json
+  
+
+rabbitmq:
+  queueName: xxx.queue
+  info:
+    -
+      address: "xxxx1:5672"
+      username: guest
+      password: guest
+
+    -
+      address: "xxxx2:5672"
+      username: guest
+      password: guest

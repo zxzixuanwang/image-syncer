@@ -1,8 +1,8 @@
-FROM golang:1.20 as builder
+FROM golang:1.23 as builder
 WORKDIR /root
-RUN  go env -w GOPROXY=https://goproxy.cn,direct
 COPY ./ ./
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make
+ENV GOPROXY=https://proxy.golang.com.cn,direct
+RUN CGO_ENABLED=0 GOOS=linux make
 
 FROM alpine:latest
 WORKDIR /bin/
