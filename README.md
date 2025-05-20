@@ -1,6 +1,7 @@
 # image-syncer
 
-此`image-syncer` 是一个经过修改过定时docker镜像同步工具，源地址是 https://github.com/AliyunContainerService/image-syncer。目前新增了进行多对多的镜像仓库同步，接收同步hook信息和监听rabbitmq来接收变动，然后定时同步镜像。
+此`image-syncer` 是一个经过修改过定时docker镜像同步工具，源地址是 https://github.com/AliyunContainerService/image-syncer。   
+目前新增了进行多对多的镜像仓库同步，接收同步hook信息和监听rabbitmq来接收变动，然后定时同步镜像。
 
 
 ### 手动编译
