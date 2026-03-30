@@ -88,7 +88,6 @@ func reOrder(images map[string]int, l *logrus.Logger) {
 				images[k] = i
 				break
 			}
-
 		}
 	}
 }
@@ -199,6 +198,7 @@ func doJob(l *logrus.Logger) error {
 			return err
 		}
 	}
+	l.Debug("clean map ", getAll)
 	Clean(getAll)
 	return nil
 }

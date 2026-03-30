@@ -13,7 +13,12 @@ var (
 )
 
 func Get() map[string]int {
-	return jobCache
+	result := make(map[string]int, len(jobCache))
+	for k, v := range jobCache {
+		result[k] = v
+	}
+
+	return result
 }
 
 func Set(key string, v int) {
