@@ -119,10 +119,10 @@ func NewRabbitMqSvc(queueName string, url []string, log *logrus.Logger) (*Rabbit
 		first:         true,
 	}
 
-	//获取connection
+	// 获取connection
 	err := rabbitmq.connect()
 	if err != nil {
-		log.Error("connect rabbitmq err")
+		log.Error("connect rabbitmq err: ", err)
 		return nil, err
 	}
 
@@ -173,6 +173,7 @@ func (r *RabbitMq) connectCluster() (*amqp.Connection, error) {
 			return conn, nil
 		}
 		time.Sleep(1 * time.Second)
+		r.l.Error("connect node: ", url, " err: ", err)
 	}
 
 	return nil, fmt.Errorf("All node is down!")
